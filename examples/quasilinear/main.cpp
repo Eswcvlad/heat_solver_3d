@@ -51,7 +51,7 @@ void run_solver()
     // If in doubt - leave as default
     mpi_params.pipeline_limit = 100;
 
-    // Specyfying the equation we are going to solve
+    // Specifying the equation we are going to solve
     heat_solver_3d::equation_params_t equation_params;
     // It is quasilinear
     equation_params.is_quasilinear = true;
@@ -79,8 +79,8 @@ void run_solver()
     };
 
     // Specifying* the grid parameters
-    // We will have a 100x100x100 grid with 1000 iterations along time
-    heat_solver_3d::grid_params_t grid_params(0.01, 60.0 / 1000.0);
+    // We will have a 101x101x101 grid with 1000 iterations along time
+    heat_solver_3d::grid_params_t grid_params(1.0 / 100.0, 60.0 / 1000.0);
 
     // Statring the calculation process
     MPI_Barrier(MPI_COMM_WORLD);
