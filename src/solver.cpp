@@ -7,6 +7,10 @@ namespace heat_solver_3d {
 
 mpi_state_t::mpi_state_t(const mpi_params_t &params, MPI_Comm comm)
 {
+    if (!params.is_valid()) {
+        throw solver_error_t("invalid MPI parameters");
+    }
+
     original_comm = comm;
 
     int size;
@@ -56,6 +60,15 @@ solver_t::solver_t(const equation_params_t &equation_params,
     , _mpi_state(mpi_params, comm)
     , _current_substep(0)
 {
+    if (!_equation_params.is_valid()) {
+        throw solver_error_t("invalid equation parameters");
+    }
+    if (!_grid_params.is_valid()) {
+        throw solver_error_t("invalid grid parameters");
+    }
+    if (_epsilon <= 0) {
+        throw solver_error_t("invalid epsilon");
+    }
     _init_dims();
     _init_mpi_types();
     _alloc_layers();

@@ -13,6 +13,11 @@ struct grid_params_t
         : space_step(space_step_), time_step(time_step_)
     {
     }
+
+    bool is_valid() const
+    {
+        return space_step > 0 && time_step > 0;
+    }
 };  // struct grid_params_t
 
 }   // namespace heat_solver_3d

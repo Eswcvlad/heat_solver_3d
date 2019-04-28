@@ -51,6 +51,14 @@ struct equation_params_t
         [](double x, double y, double t)
         { (void)x; (void)y; (void)t; return 20.0; }
     }};
+
+    bool is_valid() const
+    {
+        return x_limits[0] < x_limits[1] &&
+               y_limits[0] < y_limits[1] &&
+               z_limits[0] < z_limits[1] &&
+               t_limits[0] < t_limits[1];
+    }
 };  // struct equation_params_t
 
 }   // namespace heat_solver_3d
