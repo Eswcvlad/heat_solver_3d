@@ -22,7 +22,8 @@
     #define UNLIKELY(x) (x)
 #endif
 
-namespace heat_solver_3d {
+namespace heat_solver_3d
+{
 
 struct solver_error_t : public std::runtime_error
 {

@@ -3,7 +3,8 @@
 #include <cmath>
 #include <algorithm>
 
-namespace heat_solver_3d {
+namespace heat_solver_3d
+{
 
 mpi_state_t::mpi_state_t(const mpi_params_t &params, MPI_Comm comm)
 {
