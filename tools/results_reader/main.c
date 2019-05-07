@@ -198,7 +198,11 @@ void process_commands(const char * const file_path,
     while (1) {
         fputs("> ", stdout);
         char *res = fgets(buf, sizeof(buf), stdin);
-        if (!res || !strcmp(buf, "exit\n")) {
+        // if EOF, print \n for better terminal output
+        if (!res) {
+            putchar('\n');
+            break;
+        } else if (!strcmp(buf, "exit\n")) {
             break;
         } else if (!strcmp(buf, "h\n") || !strcmp(buf, "help\n")) {
             print_command_list();
