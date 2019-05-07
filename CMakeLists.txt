@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 
-project(heat_solver_3d VERSION 1.0.0 DESCRIPTION "library for solving 3D heat/diffusion equations")
+project(heat_solver_3d VERSION 1.0.0)
+set(PROJECT_DESCRIPTION "library for solving 3D heat/diffusion equations")
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Release)

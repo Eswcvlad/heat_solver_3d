@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 
-project(example_quasilinear VERSION 1.0.0 DESCRIPTION "an example of using the heat_solver_3d library for solving quasilinear equations")
+project(example_quasilinear VERSION 1.0.0)
+set(PROJECT_DESCRIPTION "an example of using the heat_solver_3d library for solving quasilinear equations")
 
 find_package(MPI REQUIRED)
 
