@@ -61,14 +61,13 @@ void run_solver()
     equation_params.y_limits = {{0, 1}};
     equation_params.z_limits = {{0, 1}};
     equation_params.t_limits = {{0, 60}};
-    // Treating the border as air, so conductivity at the border is very low
-    auto conductivity = [](double x, double y, double z, double t, double u) {
-       return (x > 0 && x < 1 && y > 0 && y < 1 && z > 0 && z < 1) ? 1.0 : 0.005;
+    // Setting diffusitivy very low at the border (i.e. aluminum cube in air)
+    auto diffusivity = [](double x, double y, double z, double t, double u) {
+        return (x > 0 && x < 1 && y > 0 && y < 1 && z > 0 && z < 1) ? 1.0 : 0.005;
     };
-    equation_params.g[0] = conductivity;
-    equation_params.g[1] = conductivity;
-    equation_params.g[2] = conductivity;
-    // Leaving init, borders, conductivity
+    equation_params.g[0] = diffusivity;
+    equation_params.g[1] = diffusivity;
+    equation_params.g[2] = diffusivity;
     // Setting external heat as "heat from the center",
     // that will increase with time, but is capped by current temp^3
     equation_params.f = [](double x, double y, double z, double t, double u) {
@@ -78,7 +77,7 @@ void run_solver()
         return std::min(500.0 * (1 + t / 60.0), u * u * u);
     };
 
-    // Specifying* the grid parameters
+    // Specifying the grid parameters
     // We will have a 101x101x101 grid with 1000 iterations along time
     heat_solver_3d::grid_params_t grid_params(1.0 / 100.0, 60.0 / 1000.0);
 
