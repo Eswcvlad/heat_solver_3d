@@ -39,6 +39,7 @@ endif()
 option(BUILD_EXAMPLES "Build examples as well" OFF)
 if(BUILD_EXAMPLES)
     add_subdirectory(examples/quasilinear)
+    add_subdirectory(examples/laser)
 endif(BUILD_EXAMPLES)
 
 option(BUILD_TOOLS "Build tools as well" ON)
