@@ -127,6 +127,9 @@ void solver_t::run()
         _set_y_borders(_layers[0], _current_substep);
         _set_z_borders(_layers[0], _current_substep);
     }
+    if (_handler) {
+        _handler->handle(*this);
+    }
 }
 
 void solver_t::save_local_grid_state(std::ostream &os) const
