@@ -74,6 +74,8 @@ solver_t::solver_t(const equation_params_t &equation_params,
     _init_mpi_types();
     _alloc_layers();
     _alloc_buffers();
+
+    _space_step_sq_2x = 2.0 * _grid_params.space_step * _grid_params.space_step;
 }
 
 solver_t::~solver_t()
@@ -345,6 +347,10 @@ void solver_t::_set_starting_grid_values()
             }
         }
     }
+
+    _set_x_borders(layer, 0);
+    _set_y_borders(layer, 0);
+    _set_z_borders(layer, 0);
 }
 
 void solver_t::_set_x_borders(layer_t &layer, const size_t substep)
@@ -456,8 +462,7 @@ double solver_t::_second_deriv_x(const layer_t &layer,
     const double g_c = _equation_params.g[0](_get_x(coor[0]), y, z, t, u_c);
     const double g_r = _equation_params.g[0](_get_x(coor[0] + 1), y, z, t, u_r);
 
-    return ((g_r + g_c) * (u_r - u_c) - (g_c + g_l) * (u_c - u_l)) /
-           (2.0 * _grid_params.space_step * _grid_params.space_step);
+    return ((g_r + g_c) * (u_r - u_c) - (g_c + g_l) * (u_c - u_l)) / _space_step_sq_2x;
 }
 
 double solver_t::_second_deriv_y(const layer_t &layer,
@@ -474,8 +479,7 @@ double solver_t::_second_deriv_y(const layer_t &layer,
     const double g_c = _equation_params.g[1](x, _get_y(coor[1]), z, t, u_c);
     const double g_r = _equation_params.g[1](x, _get_y(coor[1] + 1), z, t, u_r);
 
-    return ((g_r + g_c) * (u_r - u_c) - (g_c + g_l) * (u_c - u_l)) /
-           (2.0 * _grid_params.space_step * _grid_params.space_step);
+    return ((g_r + g_c) * (u_r - u_c) - (g_c + g_l) * (u_c - u_l)) / _space_step_sq_2x;
 }
 
 double solver_t::_second_deriv_z(const layer_t &layer,
@@ -492,8 +496,7 @@ double solver_t::_second_deriv_z(const layer_t &layer,
     const double g_c = _equation_params.g[2](x, y, _get_z(coor[2]), t, u_c);
     const double g_r = _equation_params.g[2](x, y, _get_z(coor[2] + 1), t, u_r);
 
-    return ((g_r + g_c) * (u_r - u_c) - (g_c + g_l) * (u_c - u_l)) /
-            (2.0 * _grid_params.space_step * _grid_params.space_step);
+    return ((g_r + g_c) * (u_r - u_c) - (g_c + g_l) * (u_c - u_l)) / _space_step_sq_2x;
 }
 
 double solver_t::_gen_a_i(const double *g,
@@ -507,7 +510,7 @@ double solver_t::_gen_b_i(const double *g,
                           const std::array<size_t, 3> coor,
                           const size_t dim)
 {
-    return -4 * _grid_params.space_step * _grid_params.space_step -
+    return -2.0 * _space_step_sq_2x -
             _grid_params.time_step * (
                 g[coor[dim] - 1] + 2 * g[coor[dim]] + g[coor[dim] + 1]
             );
@@ -527,7 +530,7 @@ double solver_t::_gen_d_i(const std::array<size_t, 3> coor,
     const double t = _get_t(substep - substep_offset);
     switch (substep_offset) {
     case 0:
-        return -2 * _grid_params.space_step * _grid_params.space_step * (
+        return -_space_step_sq_2x * (
             _grid_params.time_step * (
                 _second_deriv_x(_layers[0], coor, t) +
                 2 * _second_deriv_y(_layers[0], coor, t) +
@@ -537,12 +540,12 @@ double solver_t::_gen_d_i(const std::array<size_t, 3> coor,
             ) + 2 * _layers[0](coor)
         );
     case 1:
-        return 2 * _grid_params.space_step * _grid_params.space_step * (
+        return _space_step_sq_2x * (
             _grid_params.time_step * _second_deriv_y(_layers[0], coor, t) -
                 2 * _layers[1](coor)
         );
     case 2:
-        return 2 * _grid_params.space_step * _grid_params.space_step * (
+        return _space_step_sq_2x * (
             _grid_params.time_step * _second_deriv_z(_layers[0], coor, t) -
                 2 * _layers[2](coor)
         );
@@ -571,50 +574,38 @@ double solver_t::_process_row(layer_t &next_layer,
     }
 
     double *c = g + _tmp_buf.size() / 3;
-    coor[dim] = 1;
-    double c_i = _gen_c_i(g, coor, dim);
-    double b_i = _gen_b_i(g, coor, dim);
-    double a_i;
-    c[1] = c_i / b_i;
-    coor[dim] = 2;
-    while (coor[dim] < _dims[dim] - 1) {
-        c_i = _gen_c_i(g, coor, dim);
-        b_i = _gen_b_i(g, coor, dim);
-        a_i = _gen_a_i(g, coor, dim);
-        c[coor[dim]] = c_i / (b_i - a_i * c[coor[dim] - 1]);
-        ++coor[dim];
-    }
-
     double *d = c + _tmp_buf.size() / 3;
 
     coor[dim] = 1;
+    double a_i = _gen_a_i(g, coor, dim);
+    double b_i = _gen_b_i(g, coor, dim);
+    double c_i = _gen_c_i(g, coor, dim);
     double d_i = _gen_d_i(coor, substep);
-    a_i = _gen_a_i(g, coor, dim);
+    c[1] = c_i / b_i;
+
     coor[dim] = 0;
-    d_i -= a_i * next_layer(coor);
-
-    coor[dim] = 1;
-    b_i = _gen_b_i(g, coor, dim);
-    d[1] = d_i / b_i;
-
-    coor[dim] = _dims[dim] - 2;
-    double d_n = _gen_d_i(coor, substep);
-    c_i = _gen_c_i(g, coor, dim);
-    coor[dim] = _dims[dim] - 1;
-    d_n -= c_i * next_layer(coor);
+    d[1] = (d_i - a_i * next_layer(coor)) / b_i;
 
     coor[dim] = 2;
     while (coor[dim] < _dims[dim] - 2) {
         a_i = _gen_a_i(g, coor, dim);
-        d_i = _gen_d_i(coor, substep);
         b_i = _gen_b_i(g, coor, dim);
+        c_i = _gen_c_i(g, coor, dim);
+        d_i = _gen_d_i(coor, substep);
+        c[coor[dim]] = c_i / (b_i - a_i * c[coor[dim] - 1]);
         d[coor[dim]] = (d_i - a_i * d[coor[dim] - 1]) /
                        (b_i - a_i * c[coor[dim] - 1]);
         ++coor[dim];
     }
-
     a_i = _gen_a_i(g, coor, dim);
     b_i = _gen_b_i(g, coor, dim);
+    c_i = _gen_c_i(g, coor, dim);
+    d_i = _gen_d_i(coor, substep);
+    c[coor[dim]] = c_i / (b_i - a_i * c[coor[dim] - 1]);
+    ++coor[dim];
+    d[coor[dim] - 1] = (d_i - c_i * next_layer(coor) - a_i * d[coor[dim] - 2]) /
+                       (b_i - a_i * c[coor[dim] - 2]);
+    --coor[dim];
 
     /*
      * Calculating deltas only makes sense for quasilinear equations.
@@ -626,8 +617,7 @@ double solver_t::_process_row(layer_t &next_layer,
         prev_val = next_layer(coor);
     }
 
-    double new_val = (d_n - a_i * d[coor[dim] - 1]) /
-                     (b_i - a_i * c[coor[dim] - 1]);
+    double new_val = d[coor[dim]];
     next_layer(coor) = new_val;
     double max_delta = _equation_params.is_quasilinear
             ? std::abs(new_val - prev_val) : 0.0;
@@ -909,7 +899,7 @@ void solver_t::_step_3()
 }
 
 size_t solver_t::_set_split_dim(const std::array<int, 2> &coords,
-                                                const size_t dim_num, size_t &out_dim) const
+                                const size_t dim_num, size_t &out_dim) const
 {
     const size_t calc_dims = _total_dims[dim_num] - 2;
     const size_t mandatory_dim = calc_dims / _mpi_state.dims[dim_num];

@@ -207,6 +207,9 @@ private:
      * Cache and buffers block
      */
 
+    // Precomputed 2.0 * _grid_params.space_step * _grid_params.space_step
+    double _space_step_sq_2x;
+
     // Caches for get_x, get_y, get_z, get_t
     std::array<std::vector<double>, 4> _dim_val_caches;
     // Buffer for Thomas algorithm vars
