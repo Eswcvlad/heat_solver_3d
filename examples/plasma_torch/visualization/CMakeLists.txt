@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(plasma_jet_visualizer VERSION 1.0.0)
-set(PROJECT_DESCRIPTION "OpenGL based visualization for the plasma jet example")
+project(plasma_torch_visualizer VERSION 1.0.0)
+set(PROJECT_DESCRIPTION "OpenGL based visualization for the plasma torch example")
 
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)

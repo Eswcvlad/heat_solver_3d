@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 
-project(example_plasma_jet VERSION 1.0.0)
-set(PROJECT_DESCRIPTION "an example of using the heat_solver_3d library for solving linear equations")
+project(example_plasma_torch VERSION 1.0.0)
+set(PROJECT_DESCRIPTION "an example of using the heat_solver_3d library for a 'plasma torch' task")
 
 find_package(MPI REQUIRED)
 

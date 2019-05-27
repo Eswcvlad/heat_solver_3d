@@ -13,10 +13,10 @@
 #include <algorithm>
 
 // Creating the handler, that will log to stderr the current step and time
-class plasma_jet_handler_t : public heat_solver_3d::handler_t
+class plasma_torch_handler_t : public heat_solver_3d::handler_t
 {
 public:
-    plasma_jet_handler_t(const int proc_rank, const std::string file_path_prefix)
+    plasma_torch_handler_t(const int proc_rank, const std::string file_path_prefix)
         : _proc_rank(proc_rank)
         , _file_path_prefix(file_path_prefix)
     {
@@ -70,7 +70,7 @@ double norm_pdf(const double sigma_sq, const double off_sq)
     return coef * exp(-off_sq / (2.0 * sigma_sq));
 }
 
-double jet_x_move(double x)
+double torch_x_move(double x)
 {
     const double p = 120.0;
     x -= p / 4.0;
@@ -79,7 +79,7 @@ double jet_x_move(double x)
     return 5.0 + 4.5 * wave_val;
 }
 
-double jet_y_move(const double x)
+double torch_y_move(const double x)
 {
     const auto f = [](const double x) {
         return x - std::sin(x);
@@ -98,7 +98,7 @@ void run_solver()
     MPI_Comm_rank(MPI_COMM_WORLD, &proc_rank);
 
     // Setting up our handler
-    plasma_jet_handler_t handler(proc_rank, "plasma-jet-res.bin");
+    plasma_torch_handler_t handler(proc_rank, "plasma-torch-res.bin");
 
     // Specifying the mpi related parameters:
     heat_solver_3d::mpi_params_t mpi_params;
@@ -148,8 +148,8 @@ void run_solver()
     equation_params.gamma[5] = [](double x, double y, double t) {
         const double sigma_sq = 3.0;
         const double power_mul = (2000.0 - 293.15) / norm_pdf(sigma_sq, 0.0);
-        const double x_c = jet_x_move(t);
-        const double y_c = jet_y_move(t);
+        const double x_c = torch_x_move(t);
+        const double y_c = torch_y_move(t);
         const double dist_sq = (x - x_c) * (x - x_c) + (y - y_c) * (y - y_c);
         return 293.15 + power_mul * norm_pdf(sigma_sq, dist_sq);
     };
