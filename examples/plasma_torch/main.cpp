@@ -127,7 +127,7 @@ void run_solver()
 
     // Cube is from Al2O3
     auto diffusivity = [](double x, double y, double z, double t, double u) {
-        return 19.272 / u + 4.1579e8 / ((u * u) * (u * u));
+        return 19.275 / u + 4.1579e8 / ((u * u) * (u * u));
     };
     equation_params.g[0] = diffusivity;
     equation_params.g[1] = diffusivity;
