@@ -662,8 +662,8 @@ void init_glut(int argc, char *argv[])
     glWindowPos2i = (PFNGLWINDOWPOS2IPROC)glutGetProcAddress("glWindowPos2i");
     glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_MULTISAMPLE);
     glutInitWindowPosition(80, 80);
-    glutInitWindowSize(800, 600);
-    glutCreateWindow("Plasma Jet Visualization");
+    glutInitWindowSize(window_curr_w, window_curr_h);
+    glutCreateWindow("Plasma Torch Visualization");
     glutReshapeFunc(reshape);
     glutDisplayFunc(display);
     glutKeyboardFunc(keyboard);
