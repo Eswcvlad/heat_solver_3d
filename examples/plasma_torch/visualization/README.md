@@ -1,6 +1,11 @@
 # Plasma Torch Example Visualization
 Visualisator is made using OpenGL with GLUT. Made and tested for Linux.
 
+If, for example, the calculation results are located in a folder named `data`, you can view them like this:
+```
+$ ./plasma_torch_visualizer data/plasma-jet-res.bin.*
+```
+
 ## Controls
 `m` - Change temperature display mode.
 
